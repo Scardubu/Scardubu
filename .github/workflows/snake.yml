@@ -1,0 +1,37 @@
+# .github/workflows/snake.yml
+# Generates the contribution snake SVG daily and on manual trigger.
+# Output goes to the `output` branch — reference in README as:
+#   https://raw.githubusercontent.com/Scardubu/Scardubu/output/github-snake-dark.svg
+
+name: Generate Contribution Snake
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # daily at midnight UTC
+  workflow_dispatch:        # manual trigger from Actions tab
+  push:
+    branches: [main]
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate snake (light + dark)
+        uses: platane/snk@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-snake.svg
+            dist/github-snake-dark.svg?palette=github-dark
+
+      - name: Push to output branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
